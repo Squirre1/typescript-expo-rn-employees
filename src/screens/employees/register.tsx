@@ -1,67 +1,105 @@
 import React, { Component } from 'react'
-import { StyleSheet, Text, View } from 'react-native'
-import { FormLabel, FormInput, FormValidationMessage, Avatar } from 'react-native-elements'
-import Exponent, { Constants, ImagePicker, registerRootComponent, Permissions } from 'expo';
+import { StyleSheet, View, ActivityIndicator } from 'react-native'
+import { FormLabel, FormInput, FormValidationMessage, Button } from 'react-native-elements'
+import { observer } from 'mobx-react/native'
 
-export default class EmployeesRegister extends Component {
+import Avatar from '../../components/Avatar'
 
-  onChange = () => {
-    console.log('aaa')
+const { ImagePicker, Permissions } = require('expo')
+
+const defaultState = {
+  name: '',
+  surname: '',
+  position: '',
+  avatar: {}
+}
+
+interface IProps {
+  store: any;
+  navigation: any;
+}
+
+interface IState {
+  name: string,
+  surname: string,
+  position: string,
+  avatar: any
+}
+
+@observer
+export default class EmployeesRegister extends Component<IProps, IState> {
+
+  constructor(props: any){
+      super(props);
+      this.state = defaultState;
   }
 
+  onChange = (key: string) => (value: string | boolean | object) => (
+    this.setState({ [key]: value } as Pick<IState, keyof IState>)
+  )
+
   pickImage = async () => {
-    const { status_roll } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
+    await Permissions.askAsync(Permissions.CAMERA_ROLL);
 
     const pickerResult = await ImagePicker.launchImageLibraryAsync({
       allowsEditing: true,
       aspect: [4, 3],
     });
 
-    this.handleImagePicked(pickerResult);
-  };
-
-  handleImagePicked = async pickerResult => {
-    let uploadResponse, uploadResult;
-
-    try {
-      this.setState({ uploading: true });
-
-      if (!pickerResult.cancelled) {
-        uploadResponse = await uploadImageAsync(pickerResult.uri);
-        uploadResult = await uploadResponse.json();
-        this.setState({ image: uploadResult.location });
-      }
-    } catch (e) {
-      console.log({ uploadResponse });
-      console.log({ uploadResult });
-      console.log({ e });
-      alert('Upload failed, sorry :(');
-    } finally {
-      this.setState({ uploading: false });
+    if (!pickerResult.cancelled) {
+      this.onChange('avatar')(pickerResult)
     }
   };
 
+  register = async () => {
+    await this.props.store.addEmployer(this.state)
+
+    this.setState(defaultState, () => {
+      this.props.navigation.navigate('EmployeesList');
+    })
+  }
+
   render() {
+    const { store: { loading, error } } = this.props
+    const { name, surname, position, avatar } = this.state
+
+    if (loading) {
+      return (
+        <View style={styles.loading}>
+          <ActivityIndicator size="large" />
+        </View>
+      )
+    }
+
     return (
       <View style={styles.container}>
 
         <Avatar
-          large
-          rounded
-          icon={{name: 'ios-person', type: 'ionicon'}}
+          uri={avatar.uri}
           onPress={this.pickImage}
-          activeOpacity={0.7}
-          containerStyle={{marginLeft: 20, marginTop: 50}}
+          containerStyle={styles.avatarContainer}
         />
-      
 
-        <FormLabel>First Name</FormLabel>
-        <FormInput onChangeText={this.onChange}/>
+        <FormLabel>Name</FormLabel>
+        <FormInput value={name} onChangeText={this.onChange('name')}/>
+
         <FormLabel>Surname</FormLabel>
-        <FormInput onChangeText={this.onChange}/>
-        <FormValidationMessage>Error message</FormValidationMessage>
+        <FormInput value={surname} onChangeText={this.onChange('surname')}/>
+
         <FormLabel>Position</FormLabel>
-        <FormInput onChangeText={this.onChange}/>
+        <FormInput value={position} onChangeText={this.onChange('position')}/>
+
+        <Button
+          title='REGISTER'
+          onPress={this.register}
+          buttonStyle={styles.buttonStyle}
+        />
+
+        {error && (
+          <FormValidationMessage containerStyle={styles.error}>
+            {error}
+          </FormValidationMessage>
+        )}
       </View>
     );
   }
@@ -72,4 +110,28 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
+  loading: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  avatarContainer: {
+    marginTop: 50,
+    marginBottom: 25,
+    flexDirection: 'row',
+    alignSelf: 'center'
+  },
+  buttonStyle: {
+    alignSelf: 'center',
+    backgroundColor: "rgba(92, 99,216, 1)",
+    width: 300,
+    height: 45,
+    borderColor: "transparent",
+    borderWidth: 0,
+    borderRadius: 5,
+    marginTop: 50
+  },
+  error: {
+    alignSelf: 'center'
+  }
 });

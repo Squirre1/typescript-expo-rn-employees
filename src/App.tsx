@@ -6,25 +6,32 @@ import EmployerView from './screens/employees/view'
 import EmployeesList from './screens/employees/list'
 import EmployeesRegister from './screens/employees/register'
 
+import EmployeesStore from './mobx/employees'
 
 const EmployeeStack = createStackNavigator({
-  EmployeesList: { screen: EmployeesList, navigationOptions: { header: null } },
-  EmployerView: { screen: EmployerView, navigationOptions: { title: 'EMPLOYER' } }
+  EmployeesList: {
+    screen: (props: any) => <EmployeesList {...props} store={EmployeesStore} />,
+    navigationOptions: { header: null }
+  },
+  EmployerView
 });
 
 const App = createBottomTabNavigator(
   {
-    EmployeesRegister: { screen: EmployeesRegister, navigationOptions: { title: 'REGISTER' } },
-    EmployeesList: { screen: EmployeeStack, navigationOptions: { title: 'EMPLOYEES' } }
+    EmployeesList: { screen: EmployeeStack, navigationOptions: { title: 'EMPLOYEES' } },
+    EmployeesRegister: {
+      screen: (props: any) => <EmployeesRegister {...props} store={EmployeesStore} />,
+      navigationOptions: { title: 'REGISTER' }
+    }
   },
   {
     navigationOptions: ({ navigation }) => {
 
       const tabBarVisible = navigation.state.index > 0 ? false : true
-      const tabBarIcon = ({ focused, tintColor }) => {
+      const tabBarIcon = ({ focused, tintColor }: { focused: boolean, tintColor: any }) => {
         const { routeName } = navigation.state
 
-        let iconName
+        let iconName = ''
         if (routeName === 'EmployeesList') {
           iconName = `ios-list${focused ? '' : '-outline'}`
         } else if (routeName === 'EmployeesRegister') {
