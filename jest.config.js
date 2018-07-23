@@ -3,7 +3,9 @@ module.exports = {
       "^.+\\.jsx?$": "<rootDir>/node_modules/babel-jest",
       "^.+\\.tsx?$": "ts-jest"
   },
+  "setupTestFrameworkScriptFile": "./setupTests.js",
   "preset": "jest-expo",
+  "testEnvironment": "jsdom",
   "testRegex": "(/__tests__/.*|/src/.*\\.(test|spec))\\.(jsx?|tsx?)$",
   "transformIgnorePatterns": [],
   "moduleFileExtensions": [

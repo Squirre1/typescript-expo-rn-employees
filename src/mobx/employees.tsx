@@ -38,7 +38,7 @@ class ObservableListStore {
 
       this.loading = true
 
-      const employerId = Date.now()
+      const employerId = employer.id || Date.now()
       const employerObj = { ...employer, id: employerId, avatar: '' }
 
       if (avatar && avatar.uri) {
@@ -70,6 +70,7 @@ class ObservableListStore {
 
 }
 
+export { ObservableListStore }
 
 const observableListStore = new ObservableListStore()
 export default observableListStore
