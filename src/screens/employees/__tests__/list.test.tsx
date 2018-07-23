@@ -1,5 +1,4 @@
 import * as React from 'react'
-import * as renderer from 'react-test-renderer'
 import { ListItem } from 'react-native-elements'
 
 import { mount } from 'enzyme'
@@ -21,14 +20,14 @@ jest.mock('../../../firebase', () => {
       database: {
         ref: () => ({
           on: () => ({ }),
-          set: (value) => {
+          set: (value: any) => {
             const employees = mockGetStore().employees
             mockSetStore('employees', [ ...employees, value ])
           },
-          child: (value) => ({
+          child: (value: any) => ({
             remove: () => {
               const employees = mockGetStore().employees
-              mockSetStore('employees', employees.filter(employer => employer.id != value ))
+              mockSetStore('employees', employees.filter((employer: any) => employer.id != value ))
             }
           })
         })
@@ -46,7 +45,7 @@ describe("List of employees", () => {
   })
 
   it("add employer to list", async () => {
-    let wrapper = mount(<EmployeesList store={store} />)
+    let wrapper = mount(<EmployeesList store={store} navigation={{}} />)
 
     await store.addEmployer(newEmployer1)
     await store.addEmployer(newEmployer2)
@@ -57,7 +56,7 @@ describe("List of employees", () => {
 
 
   it("remove employer from list", async () => {
-    let wrapper = mount(<EmployeesList store={store} />)
+    let wrapper = mount(<EmployeesList store={store} navigation={{}} />)
 
     await store.removeEmployer('2')
     wrapper = wrapper.update()
